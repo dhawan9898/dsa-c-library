@@ -9,73 +9,69 @@
  */
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
 #include <time.h>
 #include "array.h"
 
-// Function to generate a random integer between min and max (inclusive)
-int random_int(int min, int max) {
-    return min + rand() % (max - min + 1);
+#define MAX_ARRAY_SIZE 1000
+#define MAX_VALUE 1000
+
+// Function to generate a random array size between 1 and MAX_ARRAY_SIZE
+size_t generate_random_size() {
+    return rand() % MAX_ARRAY_SIZE + 1;
 }
 
-// Function to check if two arrays are equal
-bool are_arrays_equal(const Array* arr1, const Array* arr2) {
-    if (get_size(arr1) != get_size(arr2) || get_capacity(arr1) != get_capacity(arr2)) {
-        return false;
-    }
+// Function to generate a random element value between 0 and MAX_VALUE
+int generate_random_value() {
+    return rand() % (MAX_VALUE + 1);
+}
 
-    for (size_t i = 0; i < get_size(arr1); ++i) {
-        if (get_element_at_index(arr1, i) != get_element_at_index(arr2, i)) {
-            return false;
+// Function to run the unit tests for the array
+void run_array_tests() {
+    srand(time(NULL));
+
+    printf("Running Array Tests...\n");
+
+    for (int i = 0; i < 100; i++) {
+        size_t array_size = generate_random_size();
+        Array* arr = create_array(array_size);
+
+        assert(arr != NULL);
+        assert(get_size(arr) == 0);
+        assert(get_capacity(arr) >= array_size);
+
+        for (size_t j = 0; j < array_size; j++) {
+            int value = generate_random_value();
+            insert_at_index(arr, j, value);
+            assert(get_element_at_index(arr, j) == value);
+            assert(get_size(arr) == (j + 1));
         }
+
+        for (size_t j = 0; j < array_size; j++) {
+            int value = generate_random_value();
+            set_element_at_index(arr, j, value);
+            assert(get_element_at_index(arr, j) == value);
+        }
+
+        for (size_t j = 0; j < array_size; j++) {
+            delete_at_index(arr, 0);
+        }
+        assert(get_size(arr) == 0);
+
+        size_t new_capacity = generate_random_size();
+        resize_array(arr, new_capacity);
+        assert(get_capacity(arr) == new_capacity);
+
+        destroy_array(arr);
     }
 
-    return true;
+    printf("All Array Tests Passed!\n");
 }
 
 int main() {
-    srand(time(NULL)); // Initialize the random number generator
-
-    Array* arr = create_array(5);
-
-    // Test insert_at_index and get_element_at_index with random values
-    for (size_t i = 0; i < get_capacity(arr); ++i) {
-        int value = random_int(1, 100);
-        insert_at_index(arr, i, value);
-    }
-
-    // Test get_element_at_index
-    size_t index_to_get = random_int(0, get_size(arr) - 1);
-    printf("Element at index %zu: %d\n", index_to_get, get_element_at_index(arr, index_to_get));
-
-    // Test set_element_at_index with a random value
-    size_t index_to_set = random_int(0, get_size(arr) - 1);
-    int new_value = random_int(101, 200);
-    set_element_at_index(arr, index_to_set, new_value);
-    printf("Modified element at index %zu: %d\n", index_to_set, get_element_at_index(arr, index_to_set));
-
-    // Test delete_at_index with a random index
-    size_t index_to_delete = random_int(0, get_size(arr) - 1);
-    delete_at_index(arr, index_to_delete);
-    printf("After deletion, element at index %zu: %d\n", index_to_delete, get_element_at_index(arr, index_to_delete));
-
-    // Test resize_array with a random new capacity
-    size_t new_capacity = random_int(3, 10);
-    resize_array(arr, new_capacity);
-    printf("New capacity: %zu\n", get_capacity(arr));
-
-    // Create a copy of the original array for comparison
-    Array* arr_copy = create_array(new_capacity);
-    for (size_t i = 0; i < get_size(arr); ++i) {
-        set_element_at_index(arr_copy, i, get_element_at_index(arr, i));
-    }
-
-    // Test equality of the original and copy arrays
-    printf("Arrays are equal: %s\n", are_arrays_equal(arr, arr_copy) ? "Yes" : "No");
-
-    destroy_array(arr);
-    destroy_array(arr_copy);
+    run_array_tests();
 
     return 0;
 }
